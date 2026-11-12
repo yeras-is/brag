@@ -1,38 +1,44 @@
-# Using /brag with other AI coding agents
+# Using `/brag` with Google Antigravity, Gemini CLI & Other Agents
 
-Agents like **Cursor**, **Aider**, or any LLM with custom instructions don't have native `SKILL.md` discovery. Use one of these methods:
+## Google Antigravity (AGY) & Gemini CLI
 
-## Option 1: Paste into custom instructions
+`/brag` is natively tuned for **Gemini** running inside **Google Antigravity** and **Gemini CLI**:
 
-Open your agent's custom instructions or system prompt settings and paste the full contents of [`skills/brag/SKILL.md`](../skills/brag/SKILL.md).
+1. **Workspace Discovery (Zero Setup in This Repo):**
+   - Antigravity automatically discovers materialized skills in `.agents/skills/brag/` and `.agents/skills/brag-slim/`.
+2. **Global Installation Across All Projects:**
+   - Run the bundled sync script to materialize `brag` and `brag-slim` into `~/.gemini/config/skills/` and `~/.agents/skills/`:
+     ```bash
+     node scripts/sync-skills.mjs --global
+     ```
+   - Or copy manually:
+     ```bash
+     mkdir -p ~/.gemini/config/skills
+     cp -R skills/brag ~/.gemini/config/skills/brag
+     ```
+3. **Keeping Repo Discovery Paths in Sync After Editing `skills/`:**
+   ```bash
+   node scripts/sync-skills.mjs
+   node scripts/sync-skills.mjs --check
+   ```
 
-## Option 2: Reference as a file path
+## Agents Without Native `SKILL.md` Discovery (Cursor, Aider, Custom LLM Hosts)
 
-If your agent supports loading instructions from a file, point it at:
-
-```
+### Option 1: Reference as a File Path
+Point your agent's instruction loader at:
+```text
 path/to/skills/brag/SKILL.md
 ```
 
-## Option 3: Copy the skill folder
-
-Copy `skills/brag/` into wherever your agent looks for skill files:
-
+### Option 2: Copy the Skill Folder
+Copy `skills/brag/` into your agent's skills directory:
 ```bash
-cp -r skills/brag/ ~/.your-agent/skills/brag/
+cp -R skills/brag/ ~/.your-agent/skills/brag/
 ```
-
-## Google Antigravity (AGY)
-
-Antigravity natively discovers skills without manual pasting:
-- **Project-level**: Symlink or copy `skills/brag/` to `.agents/skills/brag/` (or declare in `.agents/skills.json`).
-- **Global-level**: Copy `skills/brag/` to `~/.gemini/config/skills/brag/` to make `/brag` accessible across all your projects.
-- **Hyperframes companion skills**: Run `npx hyperframes skills` to ensure Hyperframes helper skills are installed to `~/.agents/skills` / `~/.gemini/config/skills`.
 
 ## Prerequisites
 
-Regardless of method, the environment needs:
 - **Node.js 22+**
-- **FFmpeg** on `PATH`
-- **Hyperframes CLI** — `npx hyperframes doctor` to verify
-- **This repo cloned** (or `skills/brag/` accessible) for assets (music, SFX, reference docs)
+- **Google Chrome / Chromium** on the machine
+- **FFmpeg** (`ffmpeg` and `ffprobe`) on `PATH`
+- *(Optional)* `npx hyperframes` only if invoking `/brag --hyperframes`

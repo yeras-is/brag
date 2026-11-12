@@ -1,237 +1,103 @@
-# Step 3: Hand off to Hyperframes
+# Step 3: Build the Composition
 
-## Create the composition brief
+By default, `/brag` builds a **self-contained, deterministic HTML/CSS/JS composition** in `<output-dir>/composition/index.html` paired with `<output-dir>/composition/audio-mix.json`, rendered via `<skill-dir>/scripts/render_composition.mjs`.
 
-Write `<output-dir>/composition-brief.md` before creating or editing the Hyperframes composition.
-
-```markdown
-# Hyperframes Composition Brief: [App Name]
-
-## Objective
-Create a short launch-style brag video for [App Name].
-
-## Output
-- Composition directory: `<output-dir>/composition/`
-- Rendered video: `<output-dir>/brag.mp4`
-- Format: [landscape / vertical / square] — [width]x[height]
-- Duration: [15-25 seconds]
-
-## Source Material
-- Project root: [path]
-- Primary files read: [index.html, styles.css, README, etc.]
-- Product name: [name]
-- Tagline / strongest claim: [line]
-- Key UI or visual moment to recreate: [specific element]
-- Copy that must appear verbatim:
-  - [line 1]
-  - [line 2]
-
-## Creative Direction
-- Tone preset: [default / polished / yc-parody / chaotic / deadpan / cinematic / app-store]
-- Creative direction: [freeform phrase, inferred or user-provided]
-- Interpretation: [how tone affects pacing, writing, visual energy, and restraint]
-- Angle: [one paragraph from brag-plan.md]
-- Hook: [first 2-3 seconds]
-- Outro / punchline: [final line]
-- Avoid:
-  - Generic SaaS language
-  - Abstract filler visuals
-  - Unrelated visual redesign
-
-## Visual Identity
-- Background: [exact value from project]
-- Text: [exact value from project]
-- Accent: [exact value from project]
-- Display font: [font or fallback decision]
-- Body font: [font or fallback decision]
-- Visual references from the project: [short list]
-
-## Storyboard
-Use the storyboard in `<output-dir>/brag-plan.md` as the creative contract.
-
-Scene summary:
-1. [Scene name] — [duration]s — [what must be seen / read]
-2. [Scene name] — [duration]s — [what must be seen / read]
-3. [...]
-
-## Audio
-- Audio role: [warm bed / sparse professional accents / cinematic support / dense rhythmic layer / intentional silence]
-- Audio arc: [how sound changes across the video]
-- Music: [filename, or none only if disabled, missing, or intentionally silent]
-- Music treatment: [volume posture, fade-in/out intent, beat/swell notes; e.g. fade under final logo]
-- Music cue guidance: [cue source — bundled preset path, or "detect at composition via analyze_music_cues.py / hyperframes beats" — plus concise optional timing hints; or unavailable]
-- Audio-reactive treatment: [none / subtle / expressive; what visual qualities may respond to RMS/frequency energy]
-- Audio-coupled moments:
-  - [scene/moment] — [typing / beat reveal / counter / card sequence / simulated interaction / final logo]
-  - [scene/moment] — [intent]
-- SFX selection guidance: [how sound should match motion and interaction; examples only, not rigid rules]
-- SFX analysis guidance: [path to sfx-analysis.md/json if present; use lower high-frequency-risk sounds for repeated or polished moments]
-- Exact SFX choice: Hyperframes should choose filenames, timestamps, density, and volume based on the implemented animation.
-- Audio files: copy the chosen music and any Hyperframes-selected SFX into `<output-dir>/composition/assets/`
-
-## Hyperframes Instructions
-Load the composition-building Hyperframes skills — `hyperframes` (composition contract + `data-*` timing, `references/format.md`; motion, eases and seek-safe keyframes in `references/motion.md`; look in `references/look.md`), `hyperframes-registry` (ready-made effects, transitions, titles), `media-use` (music, SFX, audio-reactive data), and `hyperframes-cli` (lint/check/render). /brag is its own workflow: skip the `hyperframes` storyline step: don't read `references/types/*` or `references/story.md`, don't propose storylines, and don't write a `SPEC.md`. The brag plan and composition brief replace them, including the LOOK line `references/look.md` asks for. Also skip its `usage`, `history`, `feedback` and REVIEW.md steps; `check` is brag's gate. Do not route into its generic launch-video workflow. Prefer native Hyperframes conventions over anything in `/brag`.
-
-Requirements:
-- Show at least one real UI, copy, or visual element from the source project.
-- Keep all text readable in the final render.
-- Keep the video within 15-25 seconds.
-- Include the planned music/SFX layer unless audio was explicitly disabled or documented as intentionally silent.
-- Treat `/brag` audio notes as guidance, not a fixed cue sheet. Choose SFX after the visual animation exists.
-- Treat music cue metadata as optional timing hints. Hyperframes decides exact animation timing and should ignore cues that hurt readability, scene pacing, or the product story.
-- Major reveals may move toward nearby strong cues within about 0.15s. Smaller entrances may align to nearby beat points within about 0.10s. Use only 1-3 strong cue locks in a 15-25s video unless the edit clearly benefits from more.
-- Use SFX to support motion and interaction: card sounds for card-like reveals, short announcement cues for major payoffs, key/click sounds for text or user actions, and restraint when the edit is already busy.
-- Honor planned music treatment such as fade-outs, ducking, beat-aligned reveals, or letting a final SFX ring over the music, using the best Hyperframes-supported implementation.
-- When music is present and the treatment is not `none`, consider Hyperframes audio-reactive workflow: extract audio data and use RMS/frequency bands for subtle, brand-specific motion. Good targets are glow, depth, background warmth, card presence, title emphasis, or other existing visual elements. Avoid waveform/equalizer visuals, musical-note graphics, generic particle systems, strobing, or heavy pulsing.
-- Use local assets for audio and any required runtime/media dependencies when possible.
-- Run `hyperframes check` before render — it is brag's single gate.
-- Keep creation and rendering local. Remote or publishing workflows require a separate explicit user request.
-```
-
-The brief is the boundary: if a detail belongs to product positioning, copy, tone, source material, or selection of moments, `/brag` should specify it. If a detail belongs to composition implementation, Hyperframes should decide it.
+If the user explicitly passed `--hyperframes`, see **Section 2 (Opt-In `--hyperframes` Workflow)** at the bottom of this file.
 
 ---
 
-## Audio asset preparation
+## 1. Default Workflow: Deterministic HTML/CSS/JS Composition
 
-Read [audio.md](audio.md). Copy the planned music into `<output-dir>/composition/assets/music/` before building the composition.
+### 1.1 Copy Required Audio Assets into `<output-dir>/composition/assets/`
+
+Copy the chosen music track and Kenney SFX files from `<skill-dir>/assets/` into `<output-dir>/composition/assets/`:
 
 ```bash
-mkdir -p <output-dir>/composition/assets/music
+mkdir -p <output-dir>/composition/assets/music <output-dir>/composition/assets/sfx
 cp <skill-dir>/assets/music/<track>.mp3 <output-dir>/composition/assets/music/
+cp <skill-dir>/assets/sfx/<family>/<file> <output-dir>/composition/assets/sfx/
 ```
 
-`<skill-dir>` is this skill's own directory (see "Skill directory" in `SKILL.md`).
+### 1.2 Deterministic Timeline Contract (`window.seekTo(t)`)
 
-Hyperframes copies any SFX it selects into the same `assets/` tree after choosing exact files.
+`<skill-dir>/scripts/render_composition.mjs` drives headless Chrome and calls `await window.seekTo(t)` for each keyframe (in `--qa` mode) and for every `1/30s` frame (in `--render` mode).
 
----
+Your `<output-dir>/composition/index.html` **must**:
+1. Define `window.__BRAG_DURATION = <total_seconds>;` (e.g. `20`).
+2. Implement `window.seekTo = function(t) { ... };` where `t` is the elapsed time in seconds (`0 <= t <= window.__BRAG_DURATION`).
+3. Compute all scene visibility, entrance progress, staggered card offsets, SVG stroke `stroke-dashoffset`, simulated cursor positions, and continuous subtle camera drift (`scale(1 + 0.025 * p)`) **purely as a function of `t`** — never rely on `setTimeout` or `setInterval` for visual state.
+4. Support live browser preview when opened interactively by starting a `requestAnimationFrame` loop only when not controlled by the renderer.
 
-## Voiceover (only when the user explicitly asks)
+### 1.3 Reference Easing & Timeline Helpers for `composition/index.html`
 
-Voiceover is disabled unless the user explicitly requests it, for example
-with `--voice` or "narrate this". Do not offer or enable narration during a
-normal `/brag` run.
+Use these math helpers inside `<output-dir>/composition/index.html` to get crisp `cubic-bezier(0.22, 1, 0.36, 1)` entrances, staggered sequences (`80–120ms`), and continuous drift:
 
-When voice is disabled, do not write a voiceover script, generate narration,
-transcribe audio, duck music, add a voice track, or merge narration into the
-video. The normal video export must remain entirely voice-agnostic.
+```javascript
+window.__BRAG_DURATION = 20.0;
 
-When voice is enabled, write the narration lines into `brag-plan.md` under a
-`## Voiceover script` section, then generate the audio through Kokoro:
+// Clamped normalized progress in [0, 1] over [start, start + dur]
+function progress(t, start, dur) {
+  if (dur <= 0) return t >= start ? 1 : 0;
+  return Math.max(0, Math.min(1, (t - start) / dur));
+}
 
-```bash
-npx hyperframes tts "<narration text or path to script>" \
-  --voice af_heart \
-  --output <output-dir>/composition/assets/voiceover.wav
+// Fast-out cubic-bezier(0.22, 1, 0.36, 1) approximation for snappy 0.3–0.6s entrances
+function easeOutExpo(x) {
+  return x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.pow(2, -10 * x);
+}
+
+function easeOutCubic(x) {
+  return 1 - Math.pow(1 - Math.max(0, Math.min(1, x)), 3);
+}
+
+// Staggered item entrance (staggerSec = 0.08 to 0.12 for 80–120ms)
+function staggeredEntrance(t, baseStart, index, staggerSec = 0.10, enterDur = 0.42) {
+  const p = progress(t, baseStart + index * staggerSec, enterDur);
+  return easeOutCubic(p);
+}
+
+// Continuous subtle drift over a scene window [sceneStart, sceneEnd] so no frame is ever static
+function sceneDrift(t, sceneStart, sceneEnd) {
+  const p = progress(t, sceneStart, sceneEnd - sceneStart);
+  return {
+    scale: 1 + 0.028 * p,
+    translateY: -6 * p,
+  };
+}
 ```
 
-If the user wants a different Kokoro voice, run `npx hyperframes tts --list`
-to see the available options. By default, use the command above to generate
-narration.
+### 1.4 Layout & Visual Craft Rules
+- **Fixed Viewport Stage:** Style `html, body` with `width: 1920px; height: 1080px; overflow: hidden; margin: 0; position: relative;` (or `1080x1920` / `1080x1080` for vertical/square).
+- **Safe Margins:** Keep all readable text and UI cards at least `80px` inside the viewport edges (`padding: 80px 110px`) so nothing ever clips at `15%`, `40%`, `65%`, or `90%`.
+- **Real Product First:** Embed the project's actual SVG diagrams, UI cards, interactive forms, and spec tables directly into the scene containers, and animate their real parts (e.g., progressive SVG `stroke-dashoffset`, simulated cursor moving to a button and clicking with a ripple/active state, sequential spec cards sliding into place).
+- **Clean Scene Transitions:** Activate only the current scene (`display: flex` or `opacity: 1`) or use a crisp `0.25s` wipe / staggered exit-before-enter so two scenes never overlap their text layers.
 
-Wire it into the composition on its own track. Music ducks to 0.12–0.15 for the duration of the voiceover, then returns to its normal level:
+### 1.5 Write `<output-dir>/composition/audio-mix.json`
 
-```html
-<audio id="vo" data-start="0" data-track-index="3" data-volume="1" src="assets/voiceover.wav"></audio>
+Configure the music bed and beat-aligned SFX cues in `<output-dir>/composition/audio-mix.json` (paths relative to `<output-dir>/composition/`):
+
+```json
+{
+  "music": {
+    "src": "assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.mp3",
+    "volume": 0.34,
+    "fadeIn": 0.4,
+    "fadeOut": 1.4
+  },
+  "sfx": [
+    { "src": "assets/sfx/impactSoft_medium_001.ogg", "time": 0.25, "volume": 0.72 },
+    { "src": "assets/sfx/click_002.ogg", "time": 3.80, "volume": 0.68 },
+    { "src": "assets/sfx/card-slide-1.ogg", "time": 8.15, "volume": 0.65 },
+    { "src": "assets/sfx/impactBell_heavy_000.ogg", "time": 16.40, "volume": 0.75 }
+  ]
+}
 ```
 
-The 15-25 second window holds whether or not narration is on. Write the narration script to fit that window. Within the window, scene durations flex to match the generated audio rather than being fixed in advance: check the WAV duration after generation and adjust `data-duration` values accordingly. If the rendered narration overruns the window, cut the script and regenerate; do not stretch the video past 25 seconds to fit it.
-
 ---
 
-## Audio-reactive extraction (when music is present)
+## 2. Opt-In `--hyperframes` Workflow (Only When `--hyperframes` Flag is Passed)
 
-When music is present and the treatment is not `none`, the composition can react to per-frame audio data. **Delegate the extraction to the Hyperframes audio-reactive workflow** — `/brag` does not ship an extraction script and must not hardcode a path to one.
-
-In the composition step, follow the audio-reactive guidance owned by the `media-use` skill (`audio/references/captions/motion.md`; let that skill locate its own files). That file is written for captions: use its build-time audio modulation pattern on brand elements (glow, halo, card presence), not on caption groups. It owns the data format, the extraction helper (`audio/scripts/extract-audio-data.py`, which ships with that skill, not with `/brag`, so resolve it through the skill's own directory), and the per-frame sampling pattern. Ask Hyperframes to extract the audio data and wire at least one visual element to it.
-
-If extraction is unavailable (no helper, or ffmpeg missing), note it in the brief and skip audio-reactive — do not block the render.
-
----
-
-## Beat sync (when a cue source is available)
-
-Get a cue source first (see `audio.md` → "Beat and cue sources"): a bundled preset, `analyze_music_cues.py` on any track (needs Python; run via `uv`), or `npx hyperframes beats` (no Python; needs Hyperframes ≥ 0.6.99). The rich sources (preset / `analyze_music_cues.py`) give two arrays; `hyperframes beats` gives one.
-
-- **`strongCues`** — high-intensity beats (drops, swells, accents). Use for **major moments**: scene transitions, hero reveals, match payoff, logo landing. Lock 1–3 per video. With `hyperframes beats` (no `strongCues`), take the highest-`strength` beats instead.
-- **`beats`** — the full beat grid. Use to **snap small sequential events** into the music's pulse: cards arriving one by one, stats popping in, sequenced SFX hits.
-
-### How to implement
-
-**Major moments (strong cues):**
-1. Load the cue source: the preset/analysis JSON (`strongCues` + `beats`), or the beat-grid JSON that `hyperframes beats` writes (a plain beat list; see the current hyperframes-cli skill for its location).
-2. Pick 1–3 strong timestamps near a planned major visual moment — `strongCues`, or the highest-`strength` beats.
-3. Shift the reveal's start time to land within ±0.15s of the cue.
-4. Mark it: `// beat-locked: 5.80s`
-
-**Sequential events (beats):**
-1. Decide how many sequential items there are (e.g. 3 stats, 4 profile cards).
-2. Find the nearest beat to your intended start time for the first item.
-3. Use consecutive beats from that point for each subsequent item — snap each within ±0.10s of a beat timestamp.
-4. Mark it: `// beat-grid: stat 1 at 12.65s, stat 2 at 13.17s, stat 3 at 13.70s`
-
-**Readable text vs the beat grid:** if the sequential items are text the viewer reads (stat labels, list rows, callouts) and the beats are close (under ~0.6s apart at fast tempos), do not reveal a new line on every beat — it outruns reading (this rushed the bicycles spec rows). Snap to every other beat, or reveal them quickly and hold the full set on screen afterward. Non-text accents (glows, dots, ticks) may still hit every beat. See the reading-time floor in `step-2-plan.md`.
-
-This gives you two layers of musicality: the big moments land on the strongest hits, and the small events tick along with the pulse.
-
-Do not force every tween onto a beat — readability and scene pacing come first. If snapping a tween to a beat hurts copy legibility or the product story, use the natural timing instead.
-
-If SFX are enabled, also pass `<skill-dir>/assets/sfx/sfx-analysis.md` as selection guidance. Prefer low high-frequency-risk files for repeated or polished moments. SFX on sequential events should fire at the same timestamp as the visual — the sound and motion land together.
-
----
-
-## Call Hyperframes
-
-After `<output-dir>/brag-plan.md`, `<output-dir>/composition-brief.md`, and selected audio assets exist:
-
-1. Load the Hyperframes skills (`hyperframes`, `hyperframes-registry`, `media-use`, `hyperframes-cli`) to create or update `<output-dir>/composition/`. /brag is its own workflow — skip the `hyperframes` storyline step: don't read `references/types/*` or `references/story.md`, don't propose storylines, and don't write a `SPEC.md`. The brag plan and composition brief replace them, including the LOOK line `references/look.md` asks for. Also skip its `usage`, `history`, `feedback` and REVIEW.md steps; `check` is brag's gate. Do not route into its generic launch-video workflow.
-2. Pass Hyperframes the composition brief, the brag plan, and the source files it should reference.
-3. Let Hyperframes choose the implementation details.
-4. Run Hyperframes check (the single gate before render).
-5. Render to `<output-dir>/brag.mp4`.
-6. Keep creation and rendering local. Remote or publishing workflows require a separate explicit user request.
-
-Do not manually copy stale composition snippets from this skill into the output. The point of delegating is to benefit from the latest Hyperframes guidance.
-
----
-
-## Self-review checklist
-
-Before moving to delivery, verify:
-
-- [ ] `<output-dir>/composition-brief.md` exists.
-- [ ] The brief clearly identifies the exact product moments to show.
-- [ ] The composition uses the current Hyperframes workflow, not a hardcoded `/brag` template.
-- [ ] Music file is copied into `<output-dir>/composition/assets/music/`.
-- [ ] At least one visual element subtly reacts to the music (audio-reactive treatment present), or extraction failure is documented.
-- [ ] At least 1 major tween is beat-locked to a strong cue (a `strongCue`, or the highest-`strength` beat from `hyperframes beats`) within ±0.15s, marked `// beat-locked` (or natural timing was chosen for readability).
-- [ ] Sequential events (cards, stats, list items) snap to consecutive `beats[]` timestamps (±0.10s), marked `// beat-grid` (or natural timing was chosen for readability).
-- [ ] The composition shows at least one real UI, copy, or visual element from the project.
-- [ ] Every factual claim on screen is grounded in the project (see below).
-- [ ] Total duration is 15-25 seconds.
-- [ ] Hyperframes check passes, or any blocker is documented for the user.
-
-### Grounding factual claims
-
-`hyperframes check` audits structure. It has no opinion on copy, so a scene
-can read "Ships 10x faster" — a sentence nobody in the project ever wrote —
-and still come back clean. Read the composition once with this question in
-mind, because nothing else will ask it.
-
-The line is between what the video *asserts* and how it *says* it.
-
-**Must be grounded.** Names, numbers, capabilities, feature claims, quotes,
-anything presented as the product's own copy. If a line states something about
-the product, that something has to appear in the project — its files, its
-README, its UI, its actual output. Re-cased, trimmed or split across elements
-is fine; invented is not. "Streamline your workflow" fails not because it is
-generic but because it is a claim the project never makes.
-
-**Free to invent.** Tone, framing, jokes, hooks, transitions, connective
-narration. "Here's the part nobody asked for" is made up and welcome — it is
-the craft, and it asserts nothing about the product.
-
-When a line you want is not grounded, the fix is usually to quote what the
-project does say, which is almost always stranger and better than the
-invented version.
+If and only if the user explicitly passes `--hyperframes`:
+1. Write `<output-dir>/composition-brief.md` summarizing the source material, tone, exact palette/fonts, storyboard scenes, and audio files copied into `<output-dir>/composition/assets/`.
+2. Load the Hyperframes companion skills (`hyperframes`, `hyperframes-registry`, `media-use`, `hyperframes-cli`) if installed, build the Hyperframes composition in `<output-dir>/composition/`, and run `npx hyperframes check`.
+3. Even when `--hyperframes` is used, you **must still complete the Step 4 Multimodal Visual QA Gate** by inspecting rendered keyframe PNGs at 15%, 40%, 65%, and 90% before delivering `brag.mp4`.

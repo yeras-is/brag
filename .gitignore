@@ -12,9 +12,7 @@ __pycache__/
 
 # Local tooling / machine config
 .playwright-mcp/
-.agents/
 skills-lock.json
-.claude/
 
 # HyperFrames render artifacts + heavy composition sources (never committed)
 **/brag-output*/
